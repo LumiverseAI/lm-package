@@ -80,12 +80,16 @@ def validate_manifest(manifest: dict, project_dir: Path) -> list[str]:
     # abiTag format (optional)
     abi_tag = manifest.get("abiTag", "")
     if abi_tag:
-        abi_pattern = re.compile(r"^[a-z]+-[a-z0-9]+-[a-z]+$")
+        # Optional trailing -{YEAR.MINOR} engine ABI id (e.g. -26.7): native
+        # plugins stamp it so the runtime can gate per engine MINOR. The engine's
+        # compatibility.get_local_abi_tag() produces exactly this form, so the
+        # packaged abiTag must be allowed to carry it.
+        abi_pattern = re.compile(r"^[a-z]+-[a-z0-9]+-[a-z]+(-[0-9]+\.[0-9]+)?$")
         if not abi_pattern.match(abi_tag):
             errors.append(
                 f"Invalid abiTag: '{abi_tag}'. "
-                f"Expected format: {{compiler}}-{{os_arch}}-{{config}} "
-                f"(e.g. msvc-win64-release)"
+                f"Expected format: {{compiler}}-{{os_arch}}-{{config}}[-{{year.minor}}] "
+                f"(e.g. msvc-win64-release or msvc-win64-release-26.7)"
             )
 
     # plugInfo.json validation — relaxed for USD-only plugin types (importers, etc.)

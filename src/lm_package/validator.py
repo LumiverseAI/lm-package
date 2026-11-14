@@ -18,6 +18,11 @@ REQUIRED_MANIFEST_FIELDS = [
 _USD_ONLY_PLUGIN_TYPES = {"importer"}
 
 
+# The base an LmExtension type names in plugInfo.json: "LmExtension" in C++,
+# the binding's fully-qualified name in Python.
+_LM_EXTENSION_BASES = {"LmExtension", "lm.lumydra.lumydra.LmExtension"}
+
+
 def is_cpp_project(project_dir: Path) -> bool:
     """Detect if this is a C++ extension project."""
     return (project_dir / "CMakeLists.txt").exists()
@@ -151,7 +156,7 @@ def _validate_pluginfo_exists(
                 # Only enforce the match on non-LmExtension types
                 # (traditional USD plugins where the convention does hold).
                 bases = type_info.get("bases", [])
-                if "LmExtension" in bases:
+                if _LM_EXTENSION_BASES & set(bases):
                     continue
                 errors.append(
                     f"plugInfo.json pluginName '{pname}' does not match "

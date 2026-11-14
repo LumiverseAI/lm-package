@@ -123,8 +123,14 @@ def create_package(
     # can chain-discover sub-plugins (e.g. lidar/resources/, lidar_nodes/resources/).
     # The root extensions/plugInfo.json uses {"Includes": ["*/resources/"]} which
     # finds this file, and it in turn redirects to ../*/resources/ (sibling dirs).
+    # A package that brings its own resources/plugInfo.json keeps it: that file
+    # registers the package's root plug-in and includes its sub-plugins itself,
+    # and a generated one beside it would be a second archive entry of the same
+    # name, which extraction resolves by order.
+    packaged = {Path(arc).as_posix() for _, arc in files}
     needs_discovery = (
         build_dir is not None
+        and "resources/plugInfo.json" not in packaged
         and any(Path(arc).match("*/resources/plugInfo.json") for _, arc in files)
     )
 
